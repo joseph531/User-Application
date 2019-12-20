@@ -1,15 +1,12 @@
-# Alpine Linux with OpenJDK JRE
-FROM maven:3.6.3-jdk-11
-
-RUN apt update -y
-RUN apt install vim -y 
-
+FROM maven:3.6.3-jdk-11 AS Maven
 WORKDIR /opt/workspace
-COPY . /opt/workspace
+RUN git clone --branch develop https://github.com/joseph531/user-service.git
+RUN cd /opt/workspace/user-service && mvn clean package
 
-RUN mvn clean package
-
-RUN chmod +x /opt/workspace/target/demo-0.0.1-SNAPSHOT.jar
+FROM openjdk:latest
+WORKDIR /opt/workspace
+COPY --from=Maven /opt/workspace/user-service/target/demo-0.0.1-SNAPSHOT.jar /opt/workspace
+RUN chmod +x /opt/workspace/demo-0.0.1-SNAPSHOT.jar
 RUN ls -ltra
-CMD java -jar /opt/workspace/target/demo-0.0.1-SNAPSHOT.jar
+CMD java -jar /opt/workspace/demo-0.0.1-SNAPSHOT.jar
 
